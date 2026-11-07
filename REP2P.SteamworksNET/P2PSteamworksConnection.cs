@@ -40,5 +40,18 @@ namespace REP2P.SteamworksNET
             }
             pinnedArray.Free();
         }
+
+        public override void SetData(string key, string value)
+        {
+            if(SteamUser.GetSteamID() == steamId)
+            {
+                SteamMatchmaking.SetLobbyMemberData(P2PSteamworksService.CurrentLobby, key, value);
+            }
+        }
+
+        public override string GetData(string key)
+        {
+            return SteamMatchmaking.GetLobbyMemberData(P2PSteamworksService.CurrentLobby, steamId, key);
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using Steamworks;
+using Steamworks.ServerList;
 
 namespace REP2P.Facepunch.Steamworks
 {
@@ -24,7 +25,10 @@ namespace REP2P.Facepunch.Steamworks
 
         public override void SetData(string key, string value)
         {
-            P2PFacepunchService.CurrentLobby.SetMemberData(key, value);
+            if(friend.IsMe)
+            {
+                P2PFacepunchService.CurrentLobby.SetMemberData(key, value);
+            }
         }
 
         public override string GetData(string key) => P2PFacepunchService.CurrentLobby.GetMemberData(friend, key);
