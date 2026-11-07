@@ -23,6 +23,22 @@ namespace REP2P
         /// </summary>
         public static P2PConnection localConnection { get; private set; } = null;
         /// <summary>
+        /// Are you host?
+        /// </summary>
+        /// <returns>true if host</returns>
+        public static bool isHost => instance.isHost;
+
+        /// <summary>
+        /// Are you host?
+        /// </summary>
+        /// <returns>true if host</returns>
+        public static bool isConnected => instance.isConnected;
+
+        /// <summary>
+        /// Message Handlers
+        /// </summary>
+        public readonly static Dictionary<int, P2PMessageHandler> messageHandlers = new Dictionary<int, P2PMessageHandler>();
+        /// <summary>
         /// Allow Debug Logs
         /// </summary>
         public static bool debug { get; set; }
@@ -40,36 +56,41 @@ namespace REP2P
             instance.disconnected += Instance_Disconnected;
             instance.dataReceived += Instance_DataReceived;
         }
-
         /// <summary>
-        /// Are you host?
+        /// Executes when a room is created
         /// </summary>
-        /// <returns>true if host</returns>
-        public static bool isHost => instance.isHost;
-
+        public static event Action createdRoom;
         /// <summary>
-        /// Are you host?
+        /// Executes when disconnected
         /// </summary>
-        /// <returns>true if host</returns>
-        public static bool isConnected => instance.isConnected;
-
+        public static event Action disconnected;
         /// <summary>
-        /// Message Handlers
+        /// Executes when you joined a room
         /// </summary>
-        public readonly static Dictionary<int, P2PMessageHandler> messageHandlers = new Dictionary<int, P2PMessageHandler>();
-
+        public static event Action<P2PConnection> joinedRoom;
+        /// <summary>
+        /// Executes when client connected
+        /// </summary>
+        public static event Action<P2PConnection> clientConnected;
+        /// <summary>
+        /// Executes when client disconnected
+        /// </summary>
+        public static event Action<P2PConnection> clientDisconnected;
         private static void Instance_Created()
         {
+            createdRoom?.Invoke();
             P2PLogger.Log("Created Session!");
         }
         private static void Instance_Joined(P2PConnection connection)
         {
             connection.guid = Guid.NewGuid();
+            joinedRoom?.Invoke(connection);
             P2PLogger.Log("Joined Session!");
         }
         private static void Instance_Disconnected()
         {
             localConnection = null;
+            disconnected?.Invoke();
             P2PLogger.Log("Disconnected!");
         }
 
@@ -77,6 +98,7 @@ namespace REP2P
         {
             connection.guid = GetNextGUID();
             connections.Add(connection.guid, connection);
+            clientConnected?.Invoke(connection);
             P2PLogger.Log($"Client {connection.guid} Connected!");
         }
 
@@ -93,6 +115,7 @@ namespace REP2P
         private static void Instance_ClientDisconnected(P2PConnection connection)
         {
             connections.Remove(connection.guid);
+            clientDisconnected?.Invoke(connection);
             P2PLogger.Log($"Client {connection.guid} Disconnected!");
         }
 
